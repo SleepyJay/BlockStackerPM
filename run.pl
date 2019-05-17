@@ -13,13 +13,14 @@
 # [4.5, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 4.5]
 # ]
 
+# Use lib here for simplicity.
 use lib 'lib/';
 use Modern::Perl '2016';
-
-use BlockStacking::Engine;
-use JAG::Util::Timer;
 use Getopt::Long;
 use Readonly;
+use BlockStacking::Engine;
+use JAG::Util::Timer;
+
 
 # Not currently supporting different size blocks
 Readonly my $SM_BLOCK => 3;
@@ -38,7 +39,7 @@ die 'Must specify both width and height, or neither' unless (defined $arg_width 
 
 my $opt_build_walls = 0;
 my $opt_print_walls = 0;
-my $opt_one_wall = 0;
+my $opt_one_wall    = 0;
 
 GetOptions (
     "build_walls" => \$opt_build_walls,

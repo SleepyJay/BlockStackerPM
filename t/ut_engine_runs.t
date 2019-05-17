@@ -1,17 +1,19 @@
 #!/usr/bin/perl -w
 
-use Modern::Perl '2016';
+# Use lib here for simplicity.
 use lib 'lib/';
-use BlockStacking::Engine;
+use Modern::Perl '2016';
 use Test::Most;
-use JAG::Util::Timer;
 use Readonly;
+use BlockStacking::Engine;
+use JAG::Util::Timer;
+
 
 # Not currently supporting different size blocks
 Readonly my $SM_BLOCK => 3;
 Readonly my $LG_BLOCK => 4.5;
 
-my $SLOW_OK = 1;
+my $SLOW_OK  = 1;
 my $MAX_SECS = 8;
 
 subtest 'run wall counts' => sub {

@@ -7,9 +7,9 @@ use Moose;
 use BlockStacking::Layer;
 use BlockStacking::Wall;
 
-has blocks => ( is => 'rw', default => sub { [] } );
-has layers => ( is => 'rw', default => sub { [] } );
-has walls  => ( is => 'rw', default => sub { [] } );
+has blocks        => ( is => 'rw', default => sub { [] } );
+has layers        => ( is => 'rw', default => sub { [] } );
+has walls         => ( is => 'rw', default => sub { [] } );
 has current_width => ( is => 'rw', default => 0 );
 
 sub build_layers {
