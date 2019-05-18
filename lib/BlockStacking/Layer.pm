@@ -2,29 +2,39 @@
 package BlockStacking::Layer;
 
 use Modern::Perl '2016';
-use Moose;
 
-has blocks => ( is => 'rw', isa => 'ArrayRef', default => sub { [] });
-has width => ( is => 'rw', default => 0 );
+# De-Moosed it for speed...
 
-has can_be_stacked => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
-has cannot_stack => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
-has levels => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
-has width_hash => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
+sub new {
+    my($class, %args) = @_;
+
+    my $self = {
+        blocks => [],
+        width  => 0,
+        can_be_stacked  => {},
+        levels => {},
+        width_values => [],
+        key => '',
+    };
+
+    bless $self, ref($class) || $class;
+
+    $self->BUILD($args{blocks});
+
+    return $self;
+}
 
 sub BUILD {
-    my $self = shift;
-    for my $block ($self->blocks->@*) {
-        $self->width( $self->width() + $block );
-    }
+    my ($self, $new_blocks) = @_;
+    $self->add_many( $new_blocks );
 }
 
 sub add {
     my ($self, $block) = @_;
 
     push $self->{blocks}->@*, $block;
-    $self->width( $self->width() + $block );
-    $self->width_hash->{$self->width}++;
+    $self->{width} += $block;
+    push $self->{width_values}->@*, $self->{width};
 }
 
 sub add_many {
@@ -38,22 +48,30 @@ sub add_many {
 sub check_can_stack {
     my ($self, $layer) = @_;
 
-    for my $w (keys $self->width_hash->%*) {
-        # When at the full width, they will always (correctly) align.
-        next if $self->width == $w;
+    my $width = $self->{width};
 
-        # This means they align, so cannot stack.
-        return 0 if $layer->width_hash->{$w};
+    my $next_start = 0;
+    for my $w ( @{ $self->{width_values} } ) {
+        last if $w == $width;
+        for my $v ($layer->{width_values}->@*) {
+            if($w == $v) {
+                # if matching, they cannot stack
+                return 0;
+            }
+        }
     }
 
-    # All widths (except the full width) are not the same width, so they overlap everywhere.
     return 1;
 }
 
 sub to_key {
     my $self = shift;
 
-    return join(',', $self->blocks->@*);
+    unless($self->{key}) {
+        $self->{key} = join(',', $self->{blocks}->@*);
+    }
+
+    return $self->{key};
 }
 
 1;

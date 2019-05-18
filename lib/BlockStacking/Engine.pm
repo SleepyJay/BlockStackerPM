@@ -3,14 +3,16 @@ package BlockStacking::Engine;
 
 use Modern::Perl '2016';
 use Moose;
-
-use BlockStacking::Layer;
 use BlockStacking::Wall;
+use BlockStacking::Layer;
 
 has blocks        => ( is => 'rw', default => sub { [] } );
 has layers        => ( is => 'rw', default => sub { [] } );
 has walls         => ( is => 'rw', default => sub { [] } );
 has current_width => ( is => 'rw', default => 0 );
+
+use JAG::Util::Timer;
+my $timer = JAG::Util::Timer->new(badge => 'Engine');
 
 sub build_layers {
     my($self, $width) = @_;
@@ -36,16 +38,16 @@ sub build_layers {
 
         for my $layer (@queue) {
             for my $block ($self->blocks->@*) {
-                next if ($layer->width + $block) > $width;
+                next if ($layer->{width} + $block) > $width;
 
                 # lazy clone (loop over to make sure they are not refs):
                 my $new_layer = BlockStacking::Layer->new();
-                for my $blk ($layer->blocks->@*) {
+                for my $blk ($layer->{blocks}->@*) {
                     $new_layer->add($blk);
                 }
                 $new_layer->add($block);
 
-                if ($new_layer->width == $width) {
+                if ($new_layer->{width} == $width) {
                     push @final, $new_layer;
                 }
                 else {
@@ -60,7 +62,9 @@ sub build_layers {
     $self->layers(\@final);
     $self->current_width($width);
 
+    $timer->start('stacking layers');
     $self->precache_layers();
+    print $timer->end_string('stacking layers');
 
     return scalar $self->layers->@*;
 }
@@ -71,13 +75,14 @@ sub precache_layers {
     my $layer_len = scalar $self->layers->@*;
     for my $i ( 0 .. $layer_len-1 ) {
         my $layer = $self->layers->[$i];
+
         for my $j ($i .. $layer_len-1) {
             my $under = $self->layers->[$j];
 
             if ( $under->check_can_stack($layer) ) {
                 # If you can stack A on B, then you can stack B on A...
-                $under->can_be_stacked->{$layer->to_key} = $layer;
-                $layer->can_be_stacked->{$under->to_key} = $under;
+                $under->{can_be_stacked}->{$layer->to_key} = $layer;
+                $layer->{can_be_stacked}->{$under->to_key} = $under;
             }
         }
     }
@@ -103,7 +108,7 @@ sub build_walls {
         my @next_queue; # attempt to reduce memory pressure
         for my $wall (@queue) {
             my $top = $wall->top();
-            for my $layer (values $top->can_be_stacked->%*) {
+            for my $layer (values $top->{can_be_stacked}->%*) {
                 my $new_wall = BlockStacking::Wall->new(layers => $wall->layers);
                 $new_wall->add($layer);
 
@@ -136,16 +141,16 @@ sub count_walls {
         $h = -$h;
         for my $layer ($self->layers->@*) {
             if ($h == $height) {
-                my $count = scalar values($layer->can_be_stacked->%*);
-                $layer->levels->{$h} = $count;
+                my $count = scalar values($layer->{can_be_stacked}->%*);
+                $layer->{levels}->{$h} = $count;
             }
             else {
                 my $count = 0;
-                for my $stackable (values $layer->can_be_stacked->%*) {
+                for my $stackable (values $layer->{can_be_stacked}->%*) {
                     #print Dumper($stackable->levels->{$h + 1}); use Data::Dumper;
-                    $count += $stackable->levels->{$h + 1} || 0;
+                    $count += $stackable->{levels}->{$h + 1} || 0;
                 }
-                $layer->levels->{$h} = $count;
+                $layer->{levels}->{$h} = $count;
             }
         }
     }
@@ -153,7 +158,7 @@ sub count_walls {
     # I know this seems weird that I'm using 2, but it represents the
     # running sum of combinations of stacking TO that level, i.e. from 1->2.
     for my $layer ($self->layers->@*) {
-        $total += $layer->levels->{2} || 0;
+        $total += $layer->{levels}->{2} || 0;
     }
 
     return $total;

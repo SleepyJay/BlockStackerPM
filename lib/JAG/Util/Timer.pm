@@ -5,7 +5,6 @@ use strict;
 use warnings;
 use Time::HiRes;
 
-
 sub new {
 	my($class, %args) = @_;
 
@@ -86,7 +85,10 @@ sub end_string {
 
 	$self->end($name);
 
-	return $self->as_string($name, $message);
+	my $str = $self->as_string($name, $message) . "\n";
+	$self->clear($name);
+
+	return $str;
 }
 
 sub error {

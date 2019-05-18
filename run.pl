@@ -32,9 +32,6 @@ Readonly my $TIME_WALLS  =>'calc walls  ';
 
 my ($arg_width, $arg_height) = @ARGV ? @ARGV : (27, 7);
 
-print Dumper(\@ARGV); use Data::Dumper;
-print Dumper([($arg_width, $arg_height)]);
-
 die 'Must specify both width and height, or neither' unless (defined $arg_width && defined $arg_height);
 
 my $opt_build_walls = 0;
@@ -59,7 +56,7 @@ my $engine = BlockStacking::Engine->new( blocks => [$SM_BLOCK, $LG_BLOCK] );
 
 $timer->start($TIME_LAYERS);
 my $layer_count = $engine->build_layers($arg_width);
-print $timer->end_string($TIME_LAYERS, "Layers built: $layer_count\n");
+print $timer->end_string($TIME_LAYERS, "Layers built: $layer_count");
 
 my $wall_count = 0;
 $timer->start($TIME_WALLS);
@@ -71,7 +68,7 @@ else {
     $wall_count = $engine->count_walls($arg_height);
 }
 
-print $timer->end_string($TIME_WALLS, "Walls of $arg_width x $arg_height built: $wall_count\n");
+print $timer->end_string($TIME_WALLS, "Walls of $arg_width x $arg_height built: $wall_count");
 
 if ($opt_print_walls){
     for my $wall ($engine->walls->@*) {
@@ -89,4 +86,5 @@ elsif ($opt_one_wall) {
 
     print ']';
 }
+
 

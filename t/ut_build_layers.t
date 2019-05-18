@@ -3,6 +3,7 @@
 use Modern::Perl '2016';
 use lib 'lib/';
 use BlockStacking::Engine;
+use BlockStacking::Layer;
 use Test::Most;
 
 subtest 'build layers' => sub {
@@ -13,7 +14,7 @@ subtest 'build layers' => sub {
     my $layer = $engine->layers->[0];
 
     is($layer_count, 65, "Correct layer count for width: $target_width");
-    is($layer->width, 27, "Layer correct width set (bug fix)");
+    is($layer->{width}, 27, "Layer correct width set (bug fix)");
 
 };
 
