@@ -1,10 +1,11 @@
 #!/usr/bin/perl -w
 
-use Modern::Perl '2016';
 use lib 'lib/';
+use Modern::Perl '2016';
+use Test::Most;
 use BlockStacking::Engine;
 use BlockStacking::Layer;
-use Test::Most;
+
 
 subtest 'build layers' => sub {
     my $target_width = 27;

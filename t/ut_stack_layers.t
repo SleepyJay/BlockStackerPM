@@ -1,10 +1,10 @@
 #!/usr/bin/perl -w
 
-use Modern::Perl '2016';
 use lib 'lib/';
+use Modern::Perl '2016';
+use Test::Most;
 use BlockStacking::Layer;
 
-use Test::Most;
 
 subtest 'check stacking layers' => sub {
     my @tests = (
