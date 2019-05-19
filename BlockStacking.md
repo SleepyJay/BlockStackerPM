@@ -1,4 +1,4 @@
-# Block Stacking for Perl (v 1.0.0)
+# Block Stacking for Perl (v 1.0.1)
 
 This is a Perl port of the [Python version I wrote a little while back](https://github.com/SleepyJay/PlaycodePython/tree/master/BlockStacking). It was run with Perl v5.24.2 (which is what I have last brewed on my laptop). Because I'm using `Modern::Perl '2016'`, you need to be at least that current. Sorry. 
 
@@ -46,18 +46,18 @@ In the Python version, ALL of these run in around 4-7 seconds (on my computer). 
 * 48x12: 392,312,088,153,557,198 walls
 ```
 
-In the Perl code at the current version, however, the layer creation at 48-width is taking 18-20 seconds. Wall counting is still blazing fast (sub-second). 
+In the Perl code at the current version, however, the layer creation at 48-width was taking 18-20 seconds for the direct port. I removed Moose and simplified the width-compare code to avoid hash-look ups. This got it down to about 11 seconds.
 
-AFAIK, it's pretty much a given that Python is generally slower to run than Perl. This is a function of their design, with Python having a lot more useful baggage around. Perl's no speed demon compared to a compiled language of course, but it SHOULD be faster than a near equivalent to Python. 
+This is a huge disappointment. I would have expected pretty much any code to be faster in Perl. But, Python's `set` and `in` are apparently much faster than `exists` on a Perl hash. Ultimately, this may just be an issue with memory management in Perl.
+ 
+I have one more thing I can try, which is using a tree structure to divide the work. It's a bit more work than I wanted to put into this code, so I'm not sure when I'll get around to it. 
+ 
+Wall counting is still blazing fast (sub-second). 
 
-But, in this case it is not. I have three hypotheses on which to experiment:
-
-1. I added a weird bug during the conversion that is not yet apparent; this only manifests as a speed problem, but not a functional problem. Low-moderate chance.
-2. I am doing something undesirable in the Perl that works better in Python; here I'm most suspicious of Moose, given that layers clone themselves a lot in the code. Medium-high chance.
-3. Perl is genuinely slower than Python at scale for some operatons; I'm very skeptical of this, but it's possible, I guess, although everything else is way faster. I rate this as a meh chance.  
-
-
+  
 ## Version Notes
+### Version 1.0.1:
+* Speed up layer stacking by removing Moose and some hash lookups. Still slower than Python.
 
 ###Version 1.0:
 * Pretty much a direct port from the Python code
