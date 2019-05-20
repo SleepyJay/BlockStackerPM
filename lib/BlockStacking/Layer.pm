@@ -14,6 +14,7 @@ sub new {
         can_be_stacked  => {},
         levels => {},
         width_values => [],
+        width_hash => {},
         key => '',
     };
 
@@ -35,6 +36,7 @@ sub add {
     push $self->{blocks}->@*, $block;
     $self->{width} += $block;
     push $self->{width_values}->@*, $self->{width};
+    $self->{width_hash}->{ $self->{width} } = 1;
 }
 
 sub add_many {

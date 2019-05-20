@@ -1,4 +1,4 @@
-# Block Stacking for Perl (v 1.0.1)
+# Block Stacking for Perl (v 1.1.0)
 
 This is a Perl port of the [Python version I wrote a little while back](https://github.com/SleepyJay/PlaycodePython/tree/master/BlockStacking). It was run with Perl v5.24.2 (which is what I have last brewed on my laptop). Because I'm using `Modern::Perl '2016'`, you need to be at least that current. Sorry. 
 
@@ -46,19 +46,23 @@ In the Python version, ALL of these run in around 4-7 seconds (on my computer). 
 * 48x12: 392,312,088,153,557,198 walls
 ```
 
-In the Perl code at the current version, however, the layer creation at 48-width was taking 18-20 seconds for the direct port. I removed Moose and simplified the width-compare code to avoid hash-look ups. This got it down to about 11 seconds.
+In the Perl code at version 1.0 the layer stacking at 48-width was taking 18-20 seconds. I removed Moose and simplified the width-compare code to avoid hash-look ups. This got it down to about 11 seconds (v1.0.1). 
 
-This is a huge disappointment. I would have expected pretty much any code to be faster in Perl. But, Python's `set` and `in` are apparently much faster than `exists` on a Perl hash. Ultimately, this may just be an issue with memory management in Perl.
- 
-I have one more thing I can try, which is using a tree structure to divide the work. It's a bit more work than I wanted to put into this code, so I'm not sure when I'll get around to it. 
+This was a huge disappointment. I would have expected pretty much any code to be faster in Perl. But, Python's `set` and `in` are apparently much faster than `exists` on a Perl hash. 
+
+Then in v1.1.0, I used a search tree strategy that takes under 1 second. Finally, Perl is redeemed... although to be fair, I wonder what Python's runtime would be with a similar tree-strategy...hmm.
  
 Wall counting is still blazing fast (sub-second). 
 
   
 ## Version Notes
+
+### Version 1.1.0:
+* FINALLY... blazing speed. 48x12 in 0.45 seconds! Take that Python!
+
 ### Version 1.0.1:
 * Speed up layer stacking by removing Moose and some hash lookups. Still slower than Python.
 
-###Version 1.0:
+### Version 1.0:
 * Pretty much a direct port from the Python code
 * Layer creation at the 48-width is painfully slow (like ~20 seconds).

@@ -5,11 +5,13 @@ use Modern::Perl '2016';
 use Moose;
 use BlockStacking::Wall;
 use BlockStacking::Layer;
+use BlockStacking::LayerSearchTree;
 
 has blocks        => ( is => 'rw', default => sub { [] } );
 has layers        => ( is => 'rw', default => sub { [] } );
 has walls         => ( is => 'rw', default => sub { [] } );
 has current_width => ( is => 'rw', default => 0 );
+has search_tree   => ( is => 'rw', default => sub { BlockStacking::LayerSearchTree->new() } );
 
 use JAG::Util::Timer;
 my $timer = JAG::Util::Timer->new(badge => 'Engine');
@@ -59,8 +61,12 @@ sub build_layers {
         @queue = @next_queue;
     }
 
-    $self->layers(\@final);
     $self->current_width($width);
+    $self->layers(\@final);
+
+    for my $layer (@final) {
+        $self->search_tree->add($layer->{width_values}, $layer);
+    }
 
     $timer->start('stacking layers');
     $self->precache_layers();
@@ -72,19 +78,10 @@ sub build_layers {
 sub precache_layers {
     my $self = shift;
 
-    my $layer_len = scalar $self->layers->@*;
-    for my $i ( 0 .. $layer_len-1 ) {
-        my $layer = $self->layers->[$i];
+    my $search_tree = $self->{search_tree};
 
-        for my $j ($i .. $layer_len-1) {
-            my $under = $self->layers->[$j];
-
-            if ( $under->check_can_stack($layer) ) {
-                # If you can stack A on B, then you can stack B on A...
-                $under->{can_be_stacked}->{$layer->to_key} = $layer;
-                $layer->{can_be_stacked}->{$under->to_key} = $under;
-            }
-        }
+    for my $layer ($self->layers->@*) {
+        $layer->{can_be_stacked} = $search_tree->find_stackable($layer);
     }
 }
 
@@ -108,7 +105,7 @@ sub build_walls {
         my @next_queue; # attempt to reduce memory pressure
         for my $wall (@queue) {
             my $top = $wall->top();
-            for my $layer (values $top->{can_be_stacked}->%*) {
+            for my $layer ($top->{can_be_stacked}->@*) {
                 my $new_wall = BlockStacking::Wall->new(layers => $wall->layers);
                 $new_wall->add($layer);
 
@@ -141,12 +138,12 @@ sub count_walls {
         $h = -$h;
         for my $layer ($self->layers->@*) {
             if ($h == $height) {
-                my $count = scalar values($layer->{can_be_stacked}->%*);
+                my $count = scalar($layer->{can_be_stacked}->@*);
                 $layer->{levels}->{$h} = $count;
             }
             else {
                 my $count = 0;
-                for my $stackable (values $layer->{can_be_stacked}->%*) {
+                for my $stackable ($layer->{can_be_stacked}->@*) {
                     #print Dumper($stackable->levels->{$h + 1}); use Data::Dumper;
                     $count += $stackable->{levels}->{$h + 1} || 0;
                 }
