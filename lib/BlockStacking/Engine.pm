@@ -13,9 +13,6 @@ has walls         => ( is => 'rw', default => sub { [] } );
 has current_width => ( is => 'rw', default => 0 );
 has search_tree   => ( is => 'rw', default => sub { BlockStacking::LayerSearchTree->new() } );
 
-use JAG::Util::Timer;
-my $timer = JAG::Util::Timer->new(badge => 'Engine');
-
 sub build_layers {
     my($self, $width) = @_;
 
@@ -68,10 +65,7 @@ sub build_layers {
         $self->search_tree->add($layer->{width_values}, $layer);
     }
 
-    $timer->start('stacking layers');
     $self->precache_layers();
-    print $timer->end_string('stacking layers');
-
     return scalar $self->layers->@*;
 }
 

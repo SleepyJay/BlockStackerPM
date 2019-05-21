@@ -1,4 +1,4 @@
-package BlockStacking::Engine;
+package BlockStacking::Wall;
 
 use Modern::Perl '2016';
 use Moose;
